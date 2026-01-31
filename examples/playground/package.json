@@ -4,7 +4,7 @@
   "description": "Interactive bash playground using just-bash in a web worker with xterm.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js --external:node:*",
+    "build": "esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js --external:node:* --conditions=browser",
     "dev": "pnpm build && npx serve .",
     "serve": "npx serve ."
   },
