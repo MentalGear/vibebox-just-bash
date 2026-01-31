@@ -43,17 +43,8 @@ export const createHash = notAvailable('crypto.createHash');
 export const randomBytes = notAvailable('crypto.randomBytes');
 export const randomUUID = () => crypto.randomUUID();
 
-// node:buffer
-export const Buffer = {
-  from: (data, encoding) => {
-    if (typeof data === 'string') {
-      return new TextEncoder().encode(data);
-    }
-    return new Uint8Array(data);
-  },
-  alloc: (size) => new Uint8Array(size),
-  isBuffer: () => false,
-};
+// node:buffer - use proper polyfill from buffer-shim.js
+// Buffer is aliased to buffer-shim.js in the build
 
 // node:stream
 export const Readable = notAvailable('stream.Readable');
