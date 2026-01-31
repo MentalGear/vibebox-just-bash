@@ -160,6 +160,9 @@ async function processCommand(cmd: string) {
     term.writeln("\x1b[1mData Formats:\x1b[0m");
     term.writeln("  jq (JSON), base64, md5sum, sha256sum");
     term.writeln("");
+    term.writeln("\x1b[1mVersion Control:\x1b[0m");
+    term.writeln("  git (init, add, commit, status, log, branch, checkout, diff)");
+    term.writeln("");
     term.writeln("\x1b[1mShell:\x1b[0m");
     term.writeln("  echo, printf, env, export, pwd, cd, history, clear");
     term.writeln("");
@@ -167,7 +170,7 @@ async function processCommand(cmd: string) {
     term.writeln('  echo "Hello World"');
     term.writeln("  cat data.txt | sort | uniq");
     term.writeln('  jq ".features[]" example.json');
-    term.writeln("  for i in 1 2 3; do echo $i; done");
+    term.writeln('  git init && git add . && git commit -m "Initial"');
     term.writeln("");
     prompt();
     return;
