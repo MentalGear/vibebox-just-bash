@@ -348,7 +348,9 @@ async function gitDiff(args: string[], ctx: GitContext): Promise<{ stdout: strin
 
     for (const [filepath, head, workdir, stage] of matrix) {
       // Show diff for modified files not yet staged
-      if (workdir === 2 && stage !== 2) {
+      // workdir=2 means different from index, stage=1 means same as HEAD (not staged)
+      // Also check stage=3 which means staged but workdir differs from stage
+      if (workdir === 2 && (stage === 1 || stage === 3)) {
         lines.push(`diff --git a/${filepath} b/${filepath}`);
         lines.push(`--- a/${filepath}`);
         lines.push(`+++ b/${filepath}`);

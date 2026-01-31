@@ -8,6 +8,42 @@
 import type { IFileSystem } from "just-bash/browser";
 
 /**
+ * Create a Node.js-style error with code property
+ */
+function createFsError(code: string, message: string, path: string): Error & { code: string } {
+  const err = new Error(`${code}: ${message}, '${path}'`) as Error & { code: string };
+  err.code = code;
+  return err;
+}
+
+/**
+ * Wrap an async operation to convert just-bash errors to Node.js-style errors
+ */
+async function wrapFsOp<T>(op: () => Promise<T>, path: string): Promise<T> {
+  try {
+    return await op();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("no such file") || msg.includes("ENOENT") || msg.includes("not found") || msg.includes("does not exist")) {
+      throw createFsError("ENOENT", "no such file or directory", path);
+    }
+    if (msg.includes("ENOTDIR") || msg.includes("not a directory")) {
+      throw createFsError("ENOTDIR", "not a directory", path);
+    }
+    if (msg.includes("EISDIR") || msg.includes("is a directory")) {
+      throw createFsError("EISDIR", "illegal operation on a directory", path);
+    }
+    if (msg.includes("EEXIST") || msg.includes("already exists")) {
+      throw createFsError("EEXIST", "file already exists", path);
+    }
+    if (msg.includes("ENOTEMPTY") || msg.includes("not empty")) {
+      throw createFsError("ENOTEMPTY", "directory not empty", path);
+    }
+    throw err;
+  }
+}
+
+/**
  * Node.js-compatible Stats object for isomorphic-git
  */
 class Stats {
@@ -66,11 +102,13 @@ export function createFsAdapter(fs: IFileSystem, cwd: string) {
         const resolved = resolvePath(filepath);
         const encoding = typeof options === "string" ? options : options?.encoding;
 
-        if (encoding === "utf8") {
-          return await fs.readFile(resolved, "utf8");
-        }
-        // Return as Uint8Array for binary reads
-        return await fs.readFileBuffer(resolved);
+        return wrapFsOp(async () => {
+          if (encoding === "utf8") {
+            return await fs.readFile(resolved, "utf8");
+          }
+          // Return as Uint8Array for binary reads
+          return await fs.readFileBuffer(resolved);
+        }, resolved);
       },
 
       async writeFile(
@@ -79,55 +117,66 @@ export function createFsAdapter(fs: IFileSystem, cwd: string) {
         options?: { encoding?: "utf8"; mode?: number } | "utf8"
       ): Promise<void> {
         const resolved = resolvePath(filepath);
-        await fs.writeFile(resolved, data);
+        // Ensure parent directory exists
+        const parentDir = resolved.split("/").slice(0, -1).join("/") || "/";
+        try {
+          await fs.mkdir(parentDir, { recursive: true });
+        } catch {
+          // Ignore if exists
+        }
+        await wrapFsOp(() => fs.writeFile(resolved, data), resolved);
       },
 
       async unlink(filepath: string): Promise<void> {
         const resolved = resolvePath(filepath);
-        await fs.rm(resolved, { force: false });
+        await wrapFsOp(() => fs.rm(resolved, { force: false }), resolved);
       },
 
       async readdir(filepath: string): Promise<string[]> {
         const resolved = resolvePath(filepath);
-        return await fs.readdir(resolved);
+        return wrapFsOp(() => fs.readdir(resolved), resolved);
       },
 
       async mkdir(filepath: string, options?: { recursive?: boolean } | number): Promise<void> {
         const resolved = resolvePath(filepath);
         const recursive = typeof options === "object" ? options.recursive : false;
-        await fs.mkdir(resolved, { recursive: recursive ?? false });
+        await wrapFsOp(() => fs.mkdir(resolved, { recursive: recursive ?? false }), resolved);
       },
 
       async rmdir(filepath: string): Promise<void> {
         const resolved = resolvePath(filepath);
-        await fs.rm(resolved, { recursive: false });
+        await wrapFsOp(() => fs.rm(resolved, { recursive: false }), resolved);
       },
 
       async stat(filepath: string): Promise<Stats> {
         const resolved = resolvePath(filepath);
-        const stat = await fs.stat(resolved);
-        return new Stats(stat);
+        return wrapFsOp(async () => {
+          const stat = await fs.stat(resolved);
+          return new Stats(stat);
+        }, resolved);
       },
 
       async lstat(filepath: string): Promise<Stats> {
         const resolved = resolvePath(filepath);
-        const stat = await fs.lstat(resolved);
-        return new Stats(stat);
+        return wrapFsOp(async () => {
+          const stat = await fs.lstat(resolved);
+          return new Stats(stat);
+        }, resolved);
       },
 
       async readlink(filepath: string): Promise<string> {
         const resolved = resolvePath(filepath);
-        return await fs.readlink(resolved);
+        return wrapFsOp(() => fs.readlink(resolved), resolved);
       },
 
       async symlink(target: string, filepath: string): Promise<void> {
         const resolved = resolvePath(filepath);
-        await fs.symlink(target, resolved);
+        await wrapFsOp(() => fs.symlink(target, resolved), resolved);
       },
 
       async chmod(filepath: string, mode: number): Promise<void> {
         const resolved = resolvePath(filepath);
-        await fs.chmod(resolved, mode);
+        await wrapFsOp(() => fs.chmod(resolved, mode), resolved);
       },
     },
   };
