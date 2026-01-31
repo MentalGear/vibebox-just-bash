@@ -6,6 +6,7 @@
  */
 
 import { Bash, defineCommand } from "just-bash/browser";
+import { gitCommand } from "./git-command.js";
 
 type WorkerMessage =
   | { type: "exec"; id: string; command: string }
@@ -32,7 +33,7 @@ const clearCommand = defineCommand("clear", async () => {
 
 // Create bash instance with in-memory filesystem
 let bash = new Bash({
-  customCommands: [clearCommand],
+  customCommands: [clearCommand, gitCommand],
   files: {
     "/home/user/.bashrc": 'export PS1="$ "',
     "/home/user/README.txt":
@@ -63,7 +64,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         // Reinitialize bash with optional files
         const files = msg.files || {};
         bash = new Bash({
-          customCommands: [clearCommand],
+          customCommands: [clearCommand, gitCommand],
           files: {
             "/home/user/.bashrc": 'export PS1="$ "',
             "/home/user/README.txt":
