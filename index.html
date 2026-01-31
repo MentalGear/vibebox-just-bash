@@ -12,11 +12,15 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #1a1a2e;
       color: #eee;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
@@ -25,6 +29,7 @@
       padding: 1rem 2rem;
       background: #16213e;
       border-bottom: 1px solid #0f3460;
+      flex-shrink: 0;
     }
 
     header h1 {
@@ -44,6 +49,7 @@
       display: flex;
       flex-direction: column;
       padding: 1rem;
+      min-height: 0;
     }
 
     #terminal-container {
@@ -52,11 +58,12 @@
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid #333;
+      min-height: 0;
     }
 
     #terminal {
+      width: 100%;
       height: 100%;
-      padding: 8px;
     }
 
     .status-bar {
@@ -67,6 +74,7 @@
       background: #16213e;
       border-top: 1px solid #0f3460;
       font-size: 0.85rem;
+      flex-shrink: 0;
     }
 
     .status-indicator {
