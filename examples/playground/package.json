@@ -4,12 +4,12 @@
   "description": "Interactive bash playground using just-bash in a web worker with xterm.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js --external:node:* --conditions=browser",
+    "build": "esbuild worker.ts --bundle --format=esm --platform=browser --outfile=dist/worker.js --external:node:*",
     "dev": "pnpm build && npx serve .",
     "serve": "npx serve ."
   },
   "dependencies": {
-    "just-bash": "link:../..",
+    "just-bash": "^2.7.0",
     "@xterm/xterm": "^5.5.0",
     "@xterm/addon-fit": "^0.10.0"
   },

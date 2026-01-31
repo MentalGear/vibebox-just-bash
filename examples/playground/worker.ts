@@ -5,7 +5,7 @@
  * and sends results back.
  */
 
-import { Bash, InMemoryFs, defineCommand } from "just-bash/browser";
+import { Bash, defineCommand } from "just-bash/browser";
 
 type WorkerMessage =
   | { type: "exec"; id: string; command: string }
