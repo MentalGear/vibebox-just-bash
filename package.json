@@ -1,0 +1,20 @@
+{
+  "name": "just-bash-playground",
+  "version": "1.0.0",
+  "description": "Interactive bash playground using just-bash in a web worker with xterm.js",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild worker.ts main.ts --bundle --format=esm --platform=browser --outdir=dist --alias:node:zlib=./node-shim.js --alias:node:fs=./node-shim.js --alias:node:path=./node-shim.js --alias:node:crypto=./node-shim.js --alias:node:stream=./node-shim.js --alias:node:buffer=./node-shim.js --alias:node:util=./node-shim.js --alias:node:os=./node-shim.js --alias:node:child_process=./node-shim.js --alias:node:worker_threads=./node-shim.js",
+    "dev": "pnpm build && npx serve .",
+    "serve": "npx serve ."
+  },
+  "dependencies": {
+    "just-bash": "^2.7.0",
+    "@xterm/xterm": "^5.5.0",
+    "@xterm/addon-fit": "^0.10.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.2",
+    "serve": "^14.2.4"
+  }
+}
